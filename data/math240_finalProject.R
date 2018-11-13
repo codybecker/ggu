@@ -6,6 +6,7 @@ library(tidry)
 if (!file.exists('data')) {
   dir.create('data')
 }
+setwd('data')
 deathsFile <- "https://docs.google.com/spreadsheets/d/1uBVH84OpkMsvQeSzc7oWuDnBhqmUt0Agid8eAT4ERi4/gviz/tq?tqx=out:csv&sheet=NCHS_-_Leading_Causes_of_Death__United_States"
 incomeFile <- "https://docs.google.com/spreadsheets/d/1pcaOuokmGrSy4jc_VvAbB2SKh3AyCKMKngTYuSsZWtk/gviz/tq?tqx=out:csv&sheet=medianHouseholdIncom1999"
 download.file(deathsFile, destfile = "deaths.csv", method = 'curl')
