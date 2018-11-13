@@ -72,3 +72,6 @@ data <- deaths99
 rm(list = setdiff(ls(), 'data'))
 
 
+
+
+
