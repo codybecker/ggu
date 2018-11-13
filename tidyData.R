@@ -68,4 +68,7 @@ deaths99 <- rename(deaths99, medianIncome = "median.household.income")
 ## FINAL DATA (tidy)
 data <- deaths99
 
+# clean everything up
+rm(list = setdiff(ls(), 'data'))
+
 
