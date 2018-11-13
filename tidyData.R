@@ -1,6 +1,6 @@
 ## libraries
 library(dplyr)
-library(tidry)
+library(tidyr)
 
 ## Get the data
 if (!file.exists('data')) {
@@ -47,9 +47,9 @@ deaths99 <- rename(deaths99, year = Year, causeName = Cause.Name, state = State,
 # "all causes" should be a variable not value
 df <- filter(deaths99, causeName == "All causes")
 deaths99 <- filter(deaths99, causeName != "All causes")
-deaths99$causeName <- factor(deaths99$causeName) # drops "All causes"
 df <- spread(df, causeName, deaths)
 df <- rename(df, totalDeaths = "All causes")
+deaths99$causeName <- factor(deaths99$causeName) # drops "All causes"
 df <- select(df, c(state, totalDeaths))
 deaths99 <- merge(deaths99, df)
 # add a percent variable & sort the new table
@@ -58,10 +58,14 @@ deaths99 <- arrange(deaths99, state, desc(percent))
 # reorder columns
 deaths99 <- deaths99[c('year', 'state', 'causeName', 'deaths', 
                        'percent', 'ageAdjDeathRate', 'totalDeaths')]
-#merge income
+# merge income
 deaths99 <- merge(deaths99, income.df)
 # re-order columns and sort
 deaths99 <- arrange(deaths99, desc(ageAdjDeathRate))
+# rename income
+deaths99 <- rename(deaths99, medianIncome = "median.household.income")
 
-## Crostabs
-xtabs(Age.adjusted.Death.Rate ~ State + Cause.Name, deaths.99.df)
+## FINAL DATA (tidy)
+data <- deaths99
+
+
