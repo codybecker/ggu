@@ -6,15 +6,15 @@ library(tidyr)
 if (!file.exists('data')) {
   dir.create('data')
 }
-setwd('data')
+
 deathsFile <- "https://docs.google.com/spreadsheets/d/1uBVH84OpkMsvQeSzc7oWuDnBhqmUt0Agid8eAT4ERi4/gviz/tq?tqx=out:csv&sheet=NCHS_-_Leading_Causes_of_Death__United_States"
 incomeFile <- "https://docs.google.com/spreadsheets/d/1pcaOuokmGrSy4jc_VvAbB2SKh3AyCKMKngTYuSsZWtk/gviz/tq?tqx=out:csv&sheet=medianHouseholdIncom1999"
 download.file(deathsFile, destfile = "deaths.csv", method = 'curl')
 download.file(incomeFile, destfile = "income.csv", method = 'curl')
 dateDownloaded <- date()
 # data to data frame
-deaths.df <- data.frame(read.csv("deaths.csv"))
-income.df <- data.frame(read.csv("income.csv"))
+deaths.df <- data.frame(read.csv("data/deaths.csv"))
+income.df <- data.frame(read.csv("data/income.csv"))
 
 ## Summary of the Data
 # deaths
@@ -34,9 +34,9 @@ sum(is.na(deaths.df))
 sum(is.na(income.df))
 
 ## Subset data; 
-# yr = 1999
-deaths.99.df <- deaths.df[deaths.df$Year %in% 1999,]
-deaths.99.df$Year <- factor(deaths.99.df$Year)
+# # yr = 1999 --(Don't remove years at this step. It's too early. Can combine data with state GDP)
+# deaths.99.df <- deaths.df[deaths.df$Year %in% 1999,]
+# deaths.99.df$Year <- factor(deaths.99.df$Year)
 # remove "United States" from state variable
 deaths99 <- filter(deaths.99.df, State != "United States")
 # get rid of IDC code variable
