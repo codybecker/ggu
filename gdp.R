@@ -2,10 +2,10 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-if (!dir.exists('data')) {dir.create('data')}
-fileURL <- "https://apps.bea.gov/regional/zip/SAGDP.zip"
-download.file(fileURL, "data/GDP.zip")
-unzip("data/GDP.zip", exdir = "data/GDPdata")
+# if (!dir.exists('data')) {dir.create('data')}
+# fileURL <- "https://apps.bea.gov/regional/zip/SAGDP.zip"
+# download.file(fileURL, "data/GDP.zip")
+# unzip("data/GDP.zip", exdir = "data/GDPdata")
 gdp <- read.csv("data/GDPdata/SAGDP2N__ALL_AREAS_1997_2017.csv")
 df <- gdp 
 
@@ -19,4 +19,4 @@ df <- df %>%
          `2015`, `2016`, `2017`, key = "year", value = "gdp")
 df[, 'year'] <- as.factor(df[,'year'])
 
-summary(df$gpd)
+
