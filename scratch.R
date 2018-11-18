@@ -58,39 +58,73 @@ temp <- temp %>%
          `2006`, `2007`, `2008`, `2009`, `2010`, `2011`, `2012`, `2013`, `2014`,
          `2015`, `2016`, `2017`, key = "year", value = "gdp")
 temp$year <- parse_factor(temp$year, levels = NULL)
+# Drop totals (these industries are sums of sub-industies)
+temp <- temp %>%
+  filter(!industryId %in% c("1", "2", "91",
+                            "100", "101", "102",
+                            "103", "NA"))
+# Get rid of non-states (eg "United States*", "Midwest" etc)
+wantedLevels <- unique(temp$state)[2:52]
+wantedLevels <- droplevels(wantedLevels)
+temp <- temp[temp$state %in% wantedLevels,]
+# log transform gdp
+temp <- temp %>%
+  mutate(gpd = (gdp * 10^6),
+         log_dgp = log(gdp))
 
-
-# First cut
+## First cut (by industry, year)
 by_industry <- temp %>%
-  group_by(industryId, year) %>%
-  mutate(median_ind_gpd = mean(gdp))
-industry_sum <- by_industry %>%
-  summarise(median = median(gdp))
+  group_by(industryId, year)
 # graph first cut
-g <- ggplot(industry_sum[industry_sum$industryId != "1" &
-                           industry_sum$industryId != "2" &
-                           industry_sum$industryId != "91" &
-                           industry_sum$industryId != "100" &
-                           industry_sum$industryId != "101" &
-                           industry_sum$industryId != "102" &
-                           industry_sum$industryId != "103" &
-                           industry_sum$industryId != "NA",], 
-            aes(industryId, median))
-p <- g + geom_point() #+ facet_grid(hilow ~ .)
-print(p)
+# g1 <- ggplot(by_industry, aes(gdp, industryId))
+# p1 <- g1 + geom_point(aes(color = region))  
+# print(p1)
+# x <- which(by_industry$log_gdp < 0)
+# by_industry <- by_industry[-x,]
+# g1 <- ggplot(by_industry, aes(log_gdp, industryId))
+# p1 <- g1 + geom_point(aes(color = region))  
+# print(p1)
+# g1 <- ggplot(by_industry, aes(log_gdp, state))
+# p1 <- g1 + geom_point(aes(color = region))  
+# print(p1)
+# industry_summary <- by_industry %>%
+#   summarize(total_gdp = sum(gdp))
+# g1 <- ggplot(industry_summary, aes(total_gdp, industryId))
+# p1 <- g1 + geom_point(aes(color = year))  
+# print(p1)
+industry_summary <- by_industry %>%
+  summarize(total_gdp = sum(log_gdp))
+g1 <- ggplot(industry_summary, aes(total_gdp, industryId))
+p1 <- g1 + geom_point(aes(color = year))  
+print(p1)
 
-p2.1.2 <- g2.1 + facet_grid(hilow ~ .) +
-  geom_point(aes(color = year, size = gdp), alpha = 1/2) + 
-  labs(title = "Annual GDP by State 1997-2017") +
-  labs(x = "log GDP", y = "State Name") + 
-  theme_bw() + scale_y_discrete(breaks = c("California",
-                                           "South Carolina",
-                                           "Vermont"))
+## Second cut; by industry, state
+byIndustry_byState <- temp %>%
+  group_by(industryId, state) 
+# graph second cut
+indState_sum <- byIndustry_byState %>%
+  summarize(total_gdp = sum(log_gdp))
+g2 <- ggplot(indState_sum, aes(total_gdp, industryId))
+p2 <- g2 + geom_point(aes(color = state))  
+print(p2)
 
-print(p2.1.2)
 
 
 
+
+
+# p2.1.2 <- g2.1 + facet_grid(hilow ~ .) +
+#   geom_point(aes(color = year, size = gdp), alpha = 1/2) + 
+#   labs(title = "Annual GDP by State 1997-2017") +
+#   labs(x = "log GDP", y = "State Name") + 
+#   theme_bw() + scale_y_discrete(breaks = c("California",
+#                                            "South Carolina",
+#                                            "Vermont"))
+# 
+# print(p2.1.2)
+# 
+# 
+# 
 
 
 

@@ -42,8 +42,8 @@ df <- df %>%
 df <- gdp 
 
 unique(df$GeoName)[2:52]
-wantedLevels<- unique(df$GeoName)[2:52]
-wantedLevels<- droplevels(wantedLevels)
+wantedLevels <- unique(df$GeoName)[2:52]
+wantedLevels <- droplevels(wantedLevels)
 df <- df[df$GeoName %in% wantedLevels,]
 df <- df[complete.cases(df),]
 df <- df %>% 
