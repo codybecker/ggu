@@ -50,7 +50,7 @@ temp <- read_csv("data/GDPdata/SAGDP2N__ALL_AREAS_1997_2017.csv",
                    `2017` = col_double()), 
                  skip = 1)
 glimpse(temp)
-
+levels(df$industryClassification)[x] <- "92"  
 
 # Gather the year
 temp <- temp %>% 
@@ -58,11 +58,13 @@ temp <- temp %>%
          `2006`, `2007`, `2008`, `2009`, `2010`, `2011`, `2012`, `2013`, `2014`,
          `2015`, `2016`, `2017`, key = "year", value = "gdp")
 temp$year <- parse_factor(temp$year, levels = NULL)
-# Drop totals (these industries are sums of sub-industies)
-temp <- temp %>%
-  filter(!industryId %in% c("1", "2", "91",
-                            "100", "101", "102",
-                            "103", "NA"))
+# Select only those industries that are not sub-industries
+unique(temp$industryClassification)
+wantedLevels <- unique(temp$industryClassification)[c(2,5,9,10,11,33,34,35,44,50, 
+                                                    55,59,63,64,68,69,75,78,81)]
+temp <- temp %>% 
+  filter(industryClassification %in% wantedLevels)
+temp$industryClassification <- droplevels(temp$industryClassification)
 # Get rid of non-states (eg "United States*", "Midwest" etc)
 wantedLevels <- unique(temp$state)[2:52]
 wantedLevels <- droplevels(wantedLevels)
@@ -70,7 +72,7 @@ temp <- temp[temp$state %in% wantedLevels,]
 # log transform gdp
 temp <- temp %>%
   mutate(gpd = (gdp * 10^6),
-         log_dgp = log(gdp))
+         log_gdp = log(gdp))
 
 ## First cut (by industry, year)
 by_industry <- temp %>%
@@ -100,18 +102,63 @@ print(p1)
 
 ## Second cut; by industry, state
 byIndustry_byState <- temp %>%
+  na.omit() %>%
   group_by(industryId, state) 
-# graph second cut
 indState_sum <- byIndustry_byState %>%
-  summarize(total_gdp = sum(log_gdp))
+  summarize(total_gdp = sum(log_gdp),
+            min = min(log_gdp),
+            max = max(log_gdp),
+            mean = mean(log_gdp),
+            median = median(log_gdp),
+            count = n(),
+            blank = sum(is.na(log_gdp))) 
+# Graph second cut
 g2 <- ggplot(indState_sum, aes(total_gdp, industryId))
-p2 <- g2 + geom_point(aes(color = state))  
+p2 <- g2 + geom_point()  
 print(p2)
 
+## Second cut; by state, industry
+byIndustry_byState1 <- temp %>%
+  na.omit() %>%
+  group_by(state, industryId) 
+indState_sum1 <- byIndustry_byState1 %>%
+  summarize(total_gdp = sum(log_gdp),
+            min = min(log_gdp),
+            max = max(log_gdp),
+            mean = mean(log_gdp),
+            median = median(log_gdp),
+            count = n(),
+            blank = sum(is.na(log_gdp))) 
+
+## Third cut: top industries
+topIndustries_byState <- temp %>%
+  na.omit() %>%
+  group_by(state) 
+indByState_sum <- topIndustries_byState %>%
+  summarize(description = description[which.max(log_gdp == max(log_gdp))],
+            industryNAICS = industryClassification[which.max(log_gdp == max(log_gdp))],
+            total_gdp = sum(log_gdp),
+            min = min(log_gdp),
+            max = max(log_gdp),
+            mean = mean(log_gdp),
+            median = median(log_gdp),
+            count = n(),
+            blank = sum(is.na(log_gdp))) %>%
+  arrange(median)
+indByState_sum$state <- factor(indByState_sum$state, unique(indByState_sum$state))
+# Graph third cut (top growssing industry by state)
+g3 <- ggplot(indByState_sum, aes(median, state))
+p3 <- g3 + geom_point(aes(color = description), size = 4)
+print(p3)
+
+g3 <- ggplot(topIndustries_byState, aes(state, gdp))
+p3.1 <- g3 + geom_dotplot()
+print(p3.1)
 
 
-
-
+f <- ggplot(mpg, aes(class, hwy))
+ptest <- f + geom_boxplot()
+print(ptest)
 
 # p2.1.2 <- g2.1 + facet_grid(hilow ~ .) +
 #   geom_point(aes(color = year, size = gdp), alpha = 1/2) + 
